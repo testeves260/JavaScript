@@ -2,6 +2,7 @@
 var engine = require('workshop-engine');
 
 //Global Variables:
+var lastRoundDamage = 0;
 var fightRound = 1;
 var timesCountered = 0;
 var readRules = false;
@@ -287,16 +288,6 @@ var learnNewSkill = function () {
         jedi.forcePower -= 40;
     }
 }
-//Combat Scene - Jedi vs Dark Lord
-var combat = function () {
-
-
-    if (jedi.learntSkills.length >= 2) {
-
-    }
-
-
-}
 
 //STAGES: CREATION OF ALL STAGES:
 var entryStage = engine.create({
@@ -339,6 +330,43 @@ var starDestroyer = engine.create({
     type: 'stage',
     name: '[Star Destroyer]\n'
 })
+
+
+//STAGE: ENTRY -> OK
+entryStage.executeBefore(function () {
+    console.clear()
+    engine.showBanner("Star Wars")
+})
+entryStage.addQuestion({
+    type: 'input',
+    message: 'Hello! Say your name young Jedi:',
+    validator: function (answer) {
+        if (answer.length === 0) {
+            return 'You should have a name longer than that... '
+        }
+    },
+    action: function (answer) {
+        jedi.jediName = answer;
+    }
+})
+entryStage.addQuestion({
+    type: 'list',
+    message: 'You are about to enter in World of Star Wars. Are you ready?',
+    options: ['[Yes]', '[No]'],
+    action: function (answer) {
+        if (answer === '[Yes]') {
+            console.clear();
+            engine.showBanner('Welcome ' + jedi.jediName);
+            console.log('\nWelcome ' + jedi.jediName + '! I hope you enjoy it!');
+            jedi.jediGrade = calculateJediGrade();
+            console.log('Before proceeding, you must accept the Rules. Goto -> "Rules page"\n');
+        } else {
+            console.log('May the force be with you!');
+            engine.quit();
+        }
+    }
+})
+
 
 //STAGE: myStatus -> OK
 myStatus.executeBefore(function () {
@@ -393,41 +421,6 @@ helpStage.addQuestion({
             return false
         }
     }
-})
-
-//STAGE: ENTRY -> OK
-entryStage.executeBefore(function () {
-    console.clear()
-    engine.showBanner("Star Wars")
-})
-entryStage.addQuestion({
-    type: 'input',
-    message: 'Hello! Say your name young jedi:',
-    validator: function (answer) {
-        if (answer.length === 0) {
-            return 'You should have a name longer than that... '
-        }
-    },
-    action: function (answer) {
-        jedi.jediName = answer;
-    }
-})
-entryStage.addQuestion({
-    type: 'list',
-    message: 'You are about to enter in World of Star Wars. Are you ready?',
-    options: ['[Yes]', '[No]'],
-    action: function (answer) {
-        if (answer === '[Yes]') {
-            console.log('\nWelcome ' + jedi.jediName + '! I hope you enjoy it!');
-        } else {
-            console.log('Ok, cya later!');
-            engine.quit();
-        }
-    }
-})
-entryStage.executeAfter(function () {
-    jedi.jediGrade = calculateJediGrade();
-    console.log('Before proceeding, you must accept the Rules. Goto -> "Rules page"\n');
 })
 
 //RULES PAGE -> OK
@@ -674,12 +667,14 @@ starDestroyer.executeBefore(function () {
     console.clear();
     engine.showBanner('Fight: ' + darkLord.name);
 
-    if (readRules === true &&  jedi.learntSkills.length === 2 && jedi.vulnerabilities >=15 && jedi.jediKnight) {
-        console.log('After a long way, you are now ready to defeat the Dark Lord.\n')
-        console.log(COLOR.fgRed + darkLord.name + COLOR.fgRed + ': So you are the Jedi that rised to defeat me? You ready to die?\n')
-        console.log(COLOR.fgRed + darkLord.name + COLOR.fgRed + ': You ridiculous Jedis, you think you can beat me?!\nNOW TASTE THIS!!!!');
-        jedi.hitpoints -= darkLord.attackDamage;
-        console.log(darkLord.name + ' attacked you with a ' + darkLord.attackTypes[0].attackName + ' and you lost ' + darkLord.attackTypes[0].damage + ' HitPoints');
+    if (readRules && jedi.learntSkills.length === 2 && jedi.vulnerabilities >=15 && jedi.jediKnight) {
+        console.log(COLOR.bgWhite + 'You are now ready for this battle! May the Force be with you!\n' + COLOR.reset);
+        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': You should have come to Dark Side. Either you join us, or you will die!')
+        console.log(COLOR.bgCyan + jedi.jediName + COLOR.reset + ': Strike me down and I will become more powerful than you could possibly imagine!')
+        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': You Don\'t Know The Power Of The Dark Side!');
+        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': I Will Show You The True Nature Of The Force now. Be ready for my Saber!');
+        console.log(COLOR.bgBlack + '<< ' + darkLord.name + ' attacked you with a ' + COLOR.bgRed + darkLord.attackTypes[0].attackName + COLOR.reset + COLOR.bgBlack + ' >>' + COLOR.reset);
+        lastRoundDamage = darkLord.attackTypes[0].damage;
     } else {
         console.clear()
         engine.showBanner('Fight: ' + darkLord.name);
@@ -687,7 +682,7 @@ starDestroyer.executeBefore(function () {
         if (readRules === false){console.log('Requirements: Read the Rules before proceeding')}
         if (jedi.learntSkills < 2){console.log('Requirements: You need at least 2 skills. Current known Skills: '+jedi.learntSkills.length)}
         if (jedi.vulnerabilities < 15){console.log('Requirements: You need at least 15 vulnerabilites. Current known Vulnerabilities: '+jedi.vulnerabilities)}
-        if (jedi.grade !== 'Jedi Knight'){console.log('Requirements: You need to be a Jedi Knight. Current Jedi Grade: '+jedi.jediGrade)}
+        if (!jedi.jediKnight){console.log('Requirements: You need to be a Jedi Knight. Current Jedi Grade: '+jedi.jediGrade)}
         return false
     }
 
@@ -702,6 +697,7 @@ starDestroyer.addQuestion({ //Round 1
             engine.showBanner('Battle - Round I');
             console.log('\nYou attacked ' + darkLord.name+ 'and dealt a total damage of ' + jedi.attackTypes[0].damage + '\n');
             darkLord.hitpoints -= jedi.attackTypes[0].damage;
+            jedi.hitpoints -= lastRoundDamage;
             battleDashBoard();
         } else if (answer === '[Counter]'){ // normal attack = 0; counter attack = 1
             if (timesCountered >= 2) {
@@ -710,6 +706,7 @@ starDestroyer.addQuestion({ //Round 1
                 console.log('You failed to CounterAttack your Opponent! You suffered the hit with a total damage of ' + darkLord.attackTypes[0].damage + '\n');
                 jedi.hitpoints -= darkLord.attackTypes[0].damage;
                 battleDashBoard();
+                timesCountered = 0;
             } else if (timesCountered < 2){
                 console.clear();
                 engine.showBanner('Battle - Round I');
@@ -749,10 +746,39 @@ starDestroyer.addQuestion({ //Round 2
                 jedi.hitpoints -= darkLord.attackTypes[0].damage;
                 battleDashBoard();
             } else if (timesCountered < 2) {
-                console.log('You CounterAttacked your opponent and dealt a total damage of ' + jedi.attackTypes[1].damage)
+                console.clear()
+                engine.showBanner('Battle - Round II');
+                console.log('Be ready for my Counter Attack!');
+                console.log(COLOR.bgWhite +'You CounterAttacked your opponent and dealt a total damage of ' + jedi.attackTypes[1].damage + COLOR.reset);
                 darkLord.hitpoints -= jedi.attackTypes[1].damage;
                 timesCountered += 1;
+                battleDashBoard();
             }
+
+
+            var counterAttack = function(){
+                if (timesCountered >= 2) {
+                    console.clear()
+                    engine.showBanner('Battle - Round ' + fightRound);
+                    console.log('You failed to CounterAttack your Opponent! You suffered the hit with a total damage of ' + lastRoundDamage);
+                    jedi.hitpoints -= lastRoundDamage;
+                    battleDashBoard();
+                } else if (timesCountered < 2) {
+                    console.clear()
+                    engine.showBanner('Battle - Round ' + fightRound);
+                    console.log(COLOR.bgCyan + jedi.jediName + COLOR.bgBlack + ': Be ready for my Counter Attack!' + COLOR.reset + '\n');
+                    console.log(COLOR.bgWhite +'<< You CounterAttacked your opponent and dealt a total damage of ' + jedi.attackTypes[1].damage + ' >>' + COLOR.reset);
+
+                    darkLord.hitpoints -= jedi.attackTypes[1].damage;
+                    timesCountered += 1;
+                    lastRoundDamage = 0;
+                    battleDashBoard();
+                    //add to check if hitpoints reached 0
+                }
+            }
+
+
+
         } else if (answer === '[Attack - Normal Hit]') {
             console.clear()
             engine.showBanner('Battle - Round II')
@@ -844,9 +870,6 @@ starDestroyer.addQuestion({
 }) // Round 3 Move
 
 
-
-
-
 //QUIT GAME -> OK
 quitgame.executeBefore(function () {
     console.clear()
@@ -871,6 +894,6 @@ engine.run();
 /*
 * KNOWN BUGS:
 * When you go to cantina and find new vulnerabilities, somehow it corupts the number of hours left to train in jedi temple.
-*
+* No inicio do jogo se não aceitar logo a primeira pergunt, aparece a mesma a cena a dizer "tenho q aceitar as regras" blabla
 * TODO: Edit the outputs with colored backgrounds and fonts
  */
