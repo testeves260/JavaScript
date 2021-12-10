@@ -73,22 +73,24 @@ COLOR = {
 }; //Change console color text and backg
 
 //Player Creation
-const jedi = {}; //Função construtora para poder chamar propriedades próprias dentro do objecto. - Não está a ser utilizada.
-jedi.jediName =  '';
-jedi.jediKnight = true;
-jedi.jediGrade = 'Jedi Knight';
-jedi.forcePower = 456;
-jedi.bountyValue = 75;
-jedi.fear = 85;
-jedi.vulnerabilities = 15;
-jedi.hitpoints = 35;
-jedi.learntSkills = ['Force Leap', 'Force Burst'];
-jedi.attacks = {
+const jedi = new function() {
+    this.jediName =  '',
+    this.jediKnight = true,
+    this.jediGrade = 'Jedi Knight',
+    this.forcePower = 150,
+    this.bountyValue = 45,
+    this.fear = 75,
+    this.vulnerabilities = 15,
+    this.hitpoints = 35,
+    this.learntSkills = ['Force Leap', 'Force Burst'],
+    this.attacks = {
         attack: {name: '[Normal Attack]', damage: 7},
-        skill1: {name: '[' + jedi.learntSkills[0] + ']', damage: 15},
-        skill2: {name: '[' + jedi.learntSkills[1] + ']', damage: 18},
+        skill1: {name: '[' + this.learntSkills[0] + ']', damage: 15},
+        skill2: {name: '[' + this.learntSkills[1] + ']', damage: 18},
         counterAttack: {name: '[CounterAttack]', damage: 14}
     }
+
+}; //Função construtora para poder chamar propriedades próprias dentro do objecto.
 
 //BOSS Creation:
 const darkLord = {
@@ -118,7 +120,7 @@ const checkBounty = function(){
 } //Calculate random number for BountyLevel
 const playerDashBoard = function() {
     console.log(
-        COLOR.bgWhite + COLOR.fgBlack + '      D A S H B O A R D      ' + COLOR.reset + COLOR.fgBlue +
+        COLOR.fgWhite + COLOR.fgBlack + '      D A S H B O A R D      ' + COLOR.reset + COLOR.fgBlue +
         '\n' + COLOR.bright + COLOR.underscore + COLOR.fgWhite + 'Player: '+ COLOR.reset + jedi.jediName +
         '\nJedi Rank: ' + jedi.jediGrade +
         '\nForce Power: '+ jedi.forcePower +
@@ -131,14 +133,14 @@ const playerDashBoard = function() {
         '\n\nAvailable Training Time:' +
         '\nJedi Temple: ' + maximumHoursTraining +
         '\nAhch-To Cave: '+  maximumHoursInCave +
-        COLOR.bgWhite + COLOR.fgBlack +
+        COLOR.fgWhite + COLOR.fgBlack +
         '\n                             ' + COLOR.reset + COLOR.fgBlue +
         '\n'
     )
 } //Player DashBoard
 const battleDashBoard = function(){ //DashBoard only for battles
     console.log(
-        COLOR.bgWhite + COLOR.fgBlack +
+        COLOR.fgWhite + COLOR.fgBlack +
         '      D A S H B O A R D      ' + COLOR.reset + COLOR.fgBlue +
         '\n' + jedi.jediName + '\'s' + COLOR.reset + ' HitPoints: ' + jedi.hitpoints +
         COLOR.fgRed + '\n' + darkLord.name+
@@ -201,6 +203,7 @@ const look4Vuls = function () {//Find new Vulnerabilities:
         }
 
         console.log('\n<< You discovered: ');
+
         for (counter; counter < randomNumber; counter++) {
             let randomIndex = randomIntFromInterval(0, vulToBeFound.length);
             let index = vulToBeFound.indexOf(vulToBeFound[randomIndex]);
@@ -209,6 +212,7 @@ const look4Vuls = function () {//Find new Vulnerabilities:
             vulFinded.push(poppedVul);
             counter++;
         }
+
         //Calculate Bounty & Fear:
         jedi.vulnerabilities += (counter / 2);
         jedi.bountyValue += randomIntFromInterval(1, 30);
@@ -228,14 +232,14 @@ const counterAttack = function(){
         //CHATS:
         console.clear()
         engine.showBanner('Battle - Round  ' + fightRound);
-        console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                       \n' + COLOR.reset);
-        console.log(COLOR.bgCyan + jedi.jediName + COLOR.reset + ': CounterAttacked!\n');
-        console.log(COLOR.bgCyan + jedi.jediName + ': Oh no!\n' + COLOR.bgRed + darkLord.name + COLOR.reset + ': Do you relly think that i would fall for that one again?\n')
-        console.log(COLOR.bgWhite + COLOR.fgBlack + '                           Y O U R  M O V E                                         \n' + COLOR.reset);
+        console.log(COLOR.fgRed + '                          C H A T   S C E N E                                       \n' + COLOR.reset);
+        console.log(jedi.jediName + ': CounterAttacked!\n');
+        console.log(COLOR.fgCyan + jedi.jediName + ':' + COLOR.reset + ' Oh no!\n' + COLOR.fgRed + darkLord.name + COLOR.reset + ': Do you relly think that i would fall for that one again?\n')
+        console.log(COLOR.fgRed + '                       E N D   C H A sT   S C E N E                                           \n' + COLOR.reset);
 
         //YOUR MOVE
-        console.log(COLOR.bgWhite + COLOR.fgBlack + '<< You failed to CounterAttack ' + darkLord.name + '! You suffered the hit with a total damage of ' + lastRoundDamage + ' >>\n' + COLOR.reset);
-        console.log(COLOR.bgWhite + COLOR.fgBlack + '                                                                                    \n' + COLOR.reset);
+        console.log('<< You failed to CounterAttack ' + darkLord.name + '! You suffered the hit with a total damage of ' + lastRoundDamage + ' >>\n');
+        console.log(COLOR.fgWhite + COLOR.fgBlack + '                                                                                    \n' + COLOR.reset);
 
         //CALCS:
         jedi.hitpoints -= lastRoundDamage;
@@ -248,20 +252,19 @@ const counterAttack = function(){
         battleDashBoard();
         checkWin();
         console.log('\n');
-        console.log(COLOR.bgWhite + COLOR.fgBlack + '                        D A R K   L O R D   M O V E                                          ' + COLOR.reset);
 
     } else if (!darkLord.counterImmune) {
         //CHATS:
         console.clear()
         engine.showBanner('Battle - Round  ' + fightRound);
-        console.log(COLOR.bgWhite + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
-        console.log(COLOR.bgCyan + jedi.jediName + COLOR.reset + ': CounterAttacked!\n');
-        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': Smart Move! I\'ll be ready next time. I won\'t make it easy for you! \n')
-        console.log(COLOR.bgWhite + '                           Y O U R  M O V E                                                 \n' + COLOR.reset);
+        console.log(COLOR.fgRed + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+        console.log(COLOR.fgCyan + jedi.jediName + COLOR.reset + ': CounterAttacked!\n');
+        console.log(COLOR.fgRed + darkLord.name + COLOR.reset + ': Smart Move! I\'ll be ready next time. I won\'t make it easy for you! \n')
+        console.log(COLOR.fgRed + '                       E N D   C H A T   S C E N E                                           \n' + COLOR.reset);
 
         //YOUR MOVE:
-        console.log(COLOR.bgGreen + '<< You CounterAttacked ' + darkLord.name + '! You dealt a total damage of ' + jedi.attacks.counterAttack.damage + ' >>\n' + COLOR.reset);
-        console.log(COLOR.bgWhite + '                                                                                            \n' + COLOR.reset);
+        console.log(COLOR.fgGreen + '<< You CounterAttacked ' + darkLord.name + '! You dealt a total damage of ' + jedi.attacks.counterAttack.damage + ' >>\n' + COLOR.reset);
+        console.log(COLOR.fgWhite + '                                                                                            \n' + COLOR.reset);
 
         //CALCS:
         timesCountered += 1;
@@ -274,19 +277,18 @@ const counterAttack = function(){
         battleDashBoard();
         checkWin();
         console.log('\n');
-        console.log(COLOR.bgWhite + COLOR.fgBlack + '                        D A R K   L O R D   M O V E                                          ' + COLOR.reset);
     }
 }
 const playerAttacks = function(){
     //CHAT
     console.clear();
     engine.showBanner('Battle Round:  ' + fightRound);
-    console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+    console.log(COLOR.fgRed + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
     console.log('<< You suffered ' + lastRoundDamage + ' damage from ' + darkLord.name + ' attack. >>')
 
     //YOUR MOVE:
     console.log('<< You Attacked ' + darkLord.name + '! You dealt a total damage of ' + jedi.attacks.attack.damage + ' >>\n');
-    console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+    console.log(COLOR.fgRed + '                       E N D   C H A T   S C E N E                                           \n' + COLOR.reset);
 
     //CALCS:
     jedi.hitpoints -= lastRoundDamage;
@@ -298,7 +300,6 @@ const playerAttacks = function(){
     checkWin();
     battleDashBoard();
     console.log('\n');
-    console.log(COLOR.bgWhite + COLOR.fgBlack + '                        D A R K   L O R D   M O V E                                          ' + COLOR.reset);
 }
 const playerAttackSkill = function(id){
     //VERIFICATIONS:
@@ -312,10 +313,10 @@ const playerAttackSkill = function(id){
     //CHAT
     console.clear();
     engine.showBanner('Battle Round:  ' + fightRound);
-    console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+    console.log(COLOR.fgRed + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
     console.log('<< You suffered ' + lastRoundDamage + ' damage from ' + darkLord.name + ' attack. >>')
     console.log('<< You Attacked ' + darkLord.name + 'with the skill '+ skill.name + ' and dealt a total damage of ' + skill.damage + ' >>\n');
-    console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+    console.log(COLOR.fgRed + '                       E N D   C H A T   S C E N E                                           \n' + COLOR.reset);
 
     //CALCS:
     darkLord.hitpoints -= skill.damage;
@@ -327,7 +328,6 @@ const playerAttackSkill = function(id){
     checkWin();
     battleDashBoard();
     console.log('\n');
-    console.log(COLOR.bgWhite + COLOR.fgBlack + '                        D A R K   L O R D   M O V E                                          ' + COLOR.reset);
 }
 const checkWin = function(){
     if (jedi.hitpoints <= 0){
@@ -338,7 +338,7 @@ const checkWin = function(){
     } else if (darkLord.hitpoints <= 0){
         console.clear()
         engine.showBanner('The End');
-        console.log(COLOR.bgYellow + COLOR.fgBlack + '\nCongratulations! You defeated the DarkLord, ' + darkLord.name + '. The galaxy is now a better place.' + COLOR.reset); //TODO: add phancy words here...
+        console.log(COLOR.fgYellow + COLOR.fgBlack + '\nCongratulations! You defeated the DarkLord, ' + darkLord.name + '. The galaxy is now a better place.' + COLOR.reset); //TODO: add phancy words here...
 
         playerDashBoard();
         engine.quit()
@@ -383,7 +383,7 @@ var learnNewSkill = function () {
                 splicedObject = ancientTexts.splice(i, 1); //Note: This will splice the object into a new array. To call the object, you must call the index of the object.
             }
         }
-        jedi.learntSkills.push(decypherText);
+        jedi.learntSkills.concat(decypherText);
     } else {
         //sleepTime(2000);
         console.log('Reading Chapters ...');
@@ -394,7 +394,7 @@ var learnNewSkill = function () {
         //sleepTime(5000);
         console.log('Couldn\'t finish it! It looks really hard. Maybe i should focus more next time.');
         //sleepTime(6000);
-        console.log(COLOR.bgBlack + '<< You couldn\'t learn a new skill. Try next time. You lost 40 of Power >>' + COLOR.reset);
+        console.log(COLOR.fgBlack + '<< You couldn\'t learn a new skill. Try next time. You lost 40 of Power >>' + COLOR.reset);
         jedi.forcePower -= 40;
     }
 }
@@ -444,8 +444,8 @@ var starDestroyer = engine.create({
 //STAGE: ENTRY -> OK
 entryStage.executeBefore(function () {
     console.clear()
-    engine.showBanner('Star Wars')
-    console.log(COLOR.bgRed + '\"For over a thousand generations, the Jedi Knights were the guardians of peace and justice in the Old Republic.\"' + COLOR.reset);
+    engine.showBanner('Star Wars - Rise of Jedis')
+    console.log(COLOR.fgRed + '\"For over a thousand generations, the Jedi Knights were the guardians of peace and justice in the Old Republic.\"' + COLOR.reset);
     calculateJediGrade();
 })
 entryStage.addQuestion({
@@ -714,13 +714,13 @@ starDestroyer.executeBefore(function () { //Round 1 - DarkLord Attack
     engine.showBanner('Fight: ' + darkLord.name);
 
     if (jedi.learntSkills.length === 2 && jedi.vulnerabilities >=15 && jedi.jediKnight) {
-        console.log(COLOR.bgWhite + '***You are now ready for this battle! May the Force be with you!****\n' + COLOR.reset); //TODO: Edit dialogues with some fancy words related with Star Wars galaxy shit.
-        console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
-        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': You should have come to Dark Side. Either you join us, or you will die!');
-        console.log(COLOR.bgCyan + jedi.jediName + COLOR.reset + ': Strike me down and I will become more powerful than you could possibly imagine!');
-        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': You Don\'t Know The Power Of The Dark Side!');
-        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': I Will Show You The True Nature Of The Force now. Be ready for my Saber!\n');
-        console.log(COLOR.bgWhite + COLOR.fgBlack + '                                                                                             \n' + COLOR.reset);
+        console.log('***You are now ready for this battle! May the Force be with you!****\n'); //TODO: Edit dialogues with some fancy words related with Star Wars galaxy shit.
+        console.log(COLOR.fgRed + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+        console.log(COLOR.fgRed + darkLord.name + COLOR.reset + ': You should have come to Dark Side. Either you join us, or you will die!');
+        console.log(COLOR.fgCyan + jedi.jediName + COLOR.reset + ': Strike me down and I will become more powerful than you could possibly imagine!');
+        console.log(COLOR.fgRed + darkLord.name + COLOR.reset + ': You Don\'t Know The Power Of The Dark Side!');
+        console.log(COLOR.fgRed + darkLord.name + COLOR.reset + ': I Will Show You The True Nature Of The Force now. Be ready for my Saber!\n');
+        console.log(COLOR.fgRed + '                       E N D   C H A T   S C E N E                                           \n' + COLOR.reset);
         lastRoundDamage = darkLord.attacks.attack1.damage;
         battleDashBoard();
 
@@ -728,15 +728,15 @@ starDestroyer.executeBefore(function () { //Round 1 - DarkLord Attack
         console.clear()
         engine.showBanner('Fight: ' + darkLord.name);
         console.log('Some requirements are not met. Please proceed with the necessary arrangements before coming here.\n');
-        if (jedi.learntSkills < 2){console.log('Requirements: You need at least 2 skills. Current known Skills: '+jedi.learntSkills.length)}
-        if (jedi.vulnerabilities < 15){console.log('Requirements: You need at least 15 vulnerabilites. Current known Vulnerabilities: '+jedi.vulnerabilities)}
+        if (jedi.learntSkills.length < 2){console.log('Requirements: You need at least 2 skills. Current known Skills: '+jedi.learntSkills.length)}
+        if (jedi.vulnerabilities.length < 15){console.log('Requirements: You need at least 15 vulnerabilites. Current known Vulnerabilities: '+jedi.vulnerabilities)}
         if (!jedi.jediKnight){console.log('Requirements: You need to be a Jedi Knight. Current Jedi Grade: '+jedi.jediGrade)}
         return false
     }
 })
 starDestroyer.addQuestion({ //Round 1 - Player Attack/CounterAttack
     type: 'list',
-    message: ('\n' + COLOR.bgBlack + '<< ' + darkLord.name + ': Attacked with ' + COLOR.bgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>' + COLOR.reset),
+    message: ('\n' + COLOR.fgBlack + '<< ' + darkLord.name + ': Attacked with ' + COLOR.fgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.fgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>' + COLOR.reset),
     options: ['[Attack]', '[Counter]'], //TODO: Add a defend mode...
     action: function (answer) {
         lastRoundDamage = darkLord.attacks.attack1.damage;
@@ -753,28 +753,25 @@ starDestroyer.addQuestion({ //Round 1 - Player Attack/CounterAttack
 }) //Round 1
 starDestroyer.addQuestion({
     type: 'list',
-    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.skill1.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.skill1.damage + ' HitPoints >>\n' + COLOR.reset),
-    options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
+    message: (COLOR.fgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.fgRed + darkLord.attacks.skill1.name + COLOR.reset + COLOR.fgBlack + '. You lost ' + darkLord.attacks.skill1.damage + ' HitPoints >>\n' + COLOR.reset),
+    options: ['[Attack]', '[Counter]', '[' + jedi.attacks.skill1.name + ']', '[' + jedi.attacks.skill2.name + ']'],
     action: function (answer) {
         lastRoundDamage = darkLord.attacks.skill1.damage;
 
         if (answer === '[Attack]') {
             playerAttacks();
-            console.log('[' + jedi.learntSkills[0] + ']');
         } else if (answer === '[Counter]') {
             counterAttack();
-            console.log('[' + jedi.learntSkills[0] + ']');
-        } else if (answer === '[' + jedi.learntSkills[0] + ']') {
+        } else if (answer === '[' + jedi.attacks.skill1.name + ']') {
             playerAttackSkill(0);
-        } else if (answer === '[' + jedi.learntSkills[1] + ']') {
-            console.log('[' + jedi.learntSkills[0] + ']');
+        } else if (answer === '[' + jedi.attacks.skill2.name + ']') {
             playerAttackSkill(1);
         }
     }
 })
 starDestroyer.addQuestion({
     type: 'list',
-    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>\n' + COLOR.reset),
+    message: (COLOR.fgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.fgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.fgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>\n' + COLOR.reset),
     options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
     action: function (answer) {
         lastRoundDamage = darkLord.attacks.attack1.damage;
@@ -792,7 +789,7 @@ starDestroyer.addQuestion({
 })
 starDestroyer.addQuestion({
     type: 'list',
-    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.skill2.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.skill2.damage + ' HitPoints >>\n' + COLOR.reset),
+    message: (COLOR.fgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.fgRed + darkLord.attacks.skill2.name + COLOR.reset + COLOR.fgBlack + '. You lost ' + darkLord.attacks.skill2.damage + ' HitPoints >>\n' + COLOR.reset),
     options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
     action: function (answer) {
         lastRoundDamage = darkLord.attacks.skill2.damage;
@@ -810,7 +807,7 @@ starDestroyer.addQuestion({
 })
 starDestroyer.addQuestion({
     type: 'list',
-    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>\n' + COLOR.reset),
+    message: (COLOR.fgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.fgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.fgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>\n' + COLOR.reset),
     options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
     action: function (answer) {
         lastRoundDamage = darkLord.attacks.attack1.damage;
@@ -828,7 +825,7 @@ starDestroyer.addQuestion({
 })
 starDestroyer.addQuestion({
     type: 'list',
-    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.skill3.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.skill3.damage + ' HitPoints >>\n' + COLOR.reset),
+    message: (COLOR.fgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.fgRed + darkLord.attacks.skill3.name + COLOR.reset + COLOR.fgBlack + '. You lost ' + darkLord.attacks.skill3.damage + ' HitPoints >>\n' + COLOR.reset),
     options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
     action: function (answer) {
         lastRoundDamage = darkLord.attacks.skill3.damage;
@@ -868,4 +865,8 @@ quitgame.addQuestion({
 // RUN GAME
 engine.run();
 
-//In Jedi Object, make sure to put the values at 0 and arrays emptys, except the hitpoints and jediKnight. Then start the game
+
+/*
+* KNOWN BUGS:
+* When learn new skills, the engine read it as undifined. If i pre-fill the skills array, it will work.
+ */
