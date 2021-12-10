@@ -872,7 +872,5 @@ engine.run();
 
 /*
 * KNOWN BUGS:
-* When you go to cantina and find new vulnerabilities, somehow it corupts the number of hours left to train in jedi temple.
-* No inicio do jogo se não aceitar logo a primeira pergunt, aparece a mesma a cena a dizer "tenho q aceitar as regras" blabla
-* TODO: Edit the outputs with colored backgrounds and fonts
+* When discover new skills, in the last scenes when attacking the dark lord, the skills show up as 'undefined'
  */
