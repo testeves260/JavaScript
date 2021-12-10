@@ -5,51 +5,13 @@ var engine = require('workshop-engine');
 var lastRoundDamage = 0;
 var fightRound = 1;
 var timesCountered = 0;
-var readRules = false;
+var readRules = '';
 var maximumHoursTraining = 24;
 var trainedHours = 0;
 var maximumHoursInCave = 8;
 var hoursInCave = 0;
 var attunement = 0;
-var emptyString = "";
-//Player Creation: Have to create the player with attributes outside to be able to call them inside its own object
-var jedi = {}
-jedi.jediName= ''; // your Jedi name
-jedi.forcePower= 650 // force power gained meditating at the Jedi Temple
-jedi.learntSkills = ['[Force Leap]','[Force Burst]'];
-jedi.bountyValue = 50; // starts at 0, if it reaches 100 you get busted and 0 -100
-jedi.fear = 80; // starts at 0, if it reaches 100 you join the Dark side and lose the game 0 - 100
-jedi.vulnerabilities = 16; // number of vulnerabilities found max 20, needed 15 to enter in 2 last scene.
-jedi.jediGrade = 'Jedi Knight';
-jedi.jediKnight = true; // boolean to indicate if the player has reached
-jedi.hitpoints = 30; // your current hitpoints
-jedi.attackValues = 7;
-jedi.attackTypes = [
-    {normalAttack: '[Normal Attack]', damage: 7},
-    {counterAttack: '[Counter Attack]', damage: 16}
-];
-jedi.skillsTypes = [
-    {skillName: '[' + jedi.learntSkills[0] + ']', damage: 15},
-    {skillName: '[' + jedi.learntSkills[1] + ']', damage: 18}
-];
 
-//BOSS Creation:
-var darkLord = {
-    name: 'Darth Vader',
-    hitpoints: 45,
-    counterImmune: false,
-    attackTypes: [
-        {
-            attackName: '[Saber Strike]',
-            damage: 7
-        }
-        ],
-    skills: [ //Skill Name: HitPoints
-        {skillName: '[Focused Rage]', damage: 10},
-        {skillName: '[Saber Throw]', damage: 15},
-        {skillName: '[Force Choke]', damage: 18}
-    ]
-};
 //Arrays:
 vulToBeFound = [
     'Weapons System: Lasers System',
@@ -110,6 +72,38 @@ COLOR = {
     bgWhite: '\x1b[47m',
 }; //Change console color text and backg
 
+//Player Creation
+const jedi = {}; //Função construtora para poder chamar propriedades próprias dentro do objecto.
+jedi.jediName =  '';
+jedi.jediKnight = true;
+jedi.jediGrade = 'Jedi Knight';
+jedi.forcePower = 456;
+jedi.bountyValue = 75;
+jedi.fear = 85;
+jedi.vulnerabilities = 46;
+jedi.hitpoints = 35;
+jedi.learntSkills = [];
+jedi.attacks = {
+        attack: {name: '[Normal Attack]', damage: 7},
+        skill1: {name: '[' + jedi.learntSkills[0] + ']', damage: 15},
+        skill2: {name: '[' + jedi.learntSkills[1] + ']', damage: 18},
+        counterAttack: {name: '[CounterAttack]', damage: 14}
+    }
+
+
+//BOSS Creation:
+const darkLord = {
+    name: 'Darth Vader',
+    hitpoints: 45,
+    counterImmune: false,
+    attacks: {
+        attack1: {name: '[Saber Strike]', damage: 7},
+        skill1: {name: '[Focused Rage]', damage: 10},
+        skill2: {name: '[Saber Throw]', damage: 15},
+        skill3: {name: '[Force Choke]', damage: 18}
+    }
+};
+
 //Checks && Status
 const checkFear = function(){
     if(jedi.fear >= 100){
@@ -125,71 +119,52 @@ const checkBounty = function(){
 } //Calculate random number for BountyLevel
 const playerDashBoard = function() {
     console.log(
-        'Player: ' + jedi.jediName +
+        COLOR.bgWhite + COLOR.fgBlack + '      D A S H B O A R D      ' + COLOR.reset + COLOR.fgBlue +
+        '\n' + COLOR.bright + COLOR.underscore + COLOR.fgWhite + 'Player: '+ COLOR.reset + jedi.jediName +
         '\nJedi Rank: ' + jedi.jediGrade +
-        '\nForce Power: ' + jedi.forcePower +
-        '\nSkills: ' + jedi.learntSkills +
+        '\nForce Power: '+ jedi.forcePower +
+        '\nSkills: '  + jedi.learntSkills +
         '\nVulnerabilities: ' + jedi.vulnerabilities +
         '\nHitPoints: ' + jedi.hitpoints +
-        '\nBounty: ' + jedi.bountyValue +
+        '\nBounty: '+ jedi.bountyValue +
         '\nFear: ' + jedi.fear +
-        '\nRules: ' + readRules +
+        '\nRules: '  + readRules +
         '\n\nAvailable Training Time:' +
-        '\nJedi Temple: ' + maximumHoursTraining + ' hours' +
-        '\nAhch-To Cave: '+ maximumHoursInCave + ' hours' +
+        '\nJedi Temple: ' + maximumHoursTraining +
+        '\nAhch-To Cave: '+  maximumHoursInCave +
+        COLOR.bgWhite + COLOR.fgBlack +
+        '\n                             ' + COLOR.reset + COLOR.fgBlue +
         '\n'
     )
 } //Player DashBoard
 const battleDashBoard = function(){ //DashBoard only for battles
     console.log(
-        'Player: ' + jedi.jediName +
-        '\nMy HitPoints: ' + jedi.hitpoints +
-        '\n\nDarkLord: ' + darkLord.name +
-        '\nDarkLord HitPoints: ' + darkLord.hitpoints
+        COLOR.bgWhite + COLOR.fgBlack +
+        '      D A S H B O A R D      ' + COLOR.reset + COLOR.fgBlue +
+        '\n' + jedi.jediName + '\'s' + COLOR.reset + ' HitPoints: ' + jedi.hitpoints +
+        COLOR.fgRed + '\n' + darkLord.name+
+        '\'s' + COLOR.reset + ' HitPoints: ' + darkLord.hitpoints
     )
 };
-const checkVulns = function() {
-    if (jedi.vulnerabilities < 15) {
-        console.log('Requirements: You need at least 15 Vulnerabilities.');
-        return false
-    }
-}
-const checkSkills = function () {
-    if (jedi.learntSkills.length < 2) {
-        console.log('Requirements: You need at least 2 skills dominated');
-        return false
-    } else {
-        return true
-    }
-}
-const checkGrade = function () {
-    if (!jedi.jediKnight) {
-        console.log('Requirements: You need to be a Jedi Knight');
-        return false
-    } else {
-        return true
-    }
-}
-const checkRules = function () {
-    if (!readRules) {
-        console.log('Requirements: You need to read and accept the rules')
-        return false
-    } else {
-        return true
-    }
-}
 
 //Calculations && Functions:
 const calculateJediGrade = function () {
     if (jedi.fear >= 70) {
         jedi.jediGrade = 'Jedi Knight';
+        jedi.jediKnight = true;
     } else if (jedi.fear >= 16 && jedi.fear < 70) {
         jedi.jediGrade = 'Jedi-Padawan';
     } else if (jedi.fear <= 15) {
         jedi.jediGrade = 'Jedi-Youngling';
     }
-    return jedi.jediGrade;
 } //Calculates Jedis Grades
+const sleepTime = function(ms){
+    var start = new Date().getTime();
+    var end = start;
+    while(end < start + ms) {
+        end = new Date().getTime();
+    }
+}
 const randomIntFromInterval = function (min, max) { // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min)
 } //To generate a random number for Vulnerabilities.
@@ -212,11 +187,6 @@ const calculateAttunement = function () {
     attunement = (210 / jedi.fear); //TODO: Changing this value will change the amount of power received.
     return attunement
 };
-const calculateHoursTrained = function (answer) {
-    maximumHoursTraining -= answer;
-
-    return maximumHoursTraining
-}
 const look4Vuls = function () {//Find new Vulnerabilities:
     if (vulFinded.length !== vulToBeFound.length) {
         let randomNumber = randomIntFromInterval(0, vulToBeFound.length);
@@ -231,7 +201,7 @@ const look4Vuls = function () {//Find new Vulnerabilities:
             }
         }
 
-        console.log('\nYou discovered: ');
+        console.log('\n<< You discovered: ');
         for (counter; counter < randomNumber; counter++) {
             let randomIndex = randomIntFromInterval(0, vulToBeFound.length);
             let index = vulToBeFound.indexOf(vulToBeFound[randomIndex]);
@@ -250,6 +220,129 @@ const look4Vuls = function () {//Find new Vulnerabilities:
         calculateJediGrade();
         //Return:
         console.log('You now have: ' + vulFinded.length + ' known vulnerabilities!\n');
+    }
+}
+
+//Battle Functions
+const counterAttack = function(){
+    if (darkLord.counterImmune) {
+        //CHATS:
+        console.clear()
+        engine.showBanner('Battle - Round  ' + fightRound);
+        console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                       \n' + COLOR.reset);
+        console.log(COLOR.bgCyan + jedi.jediName + COLOR.reset + ': CounterAttacked!\n');
+        console.log(COLOR.bgCyan + jedi.jediName + ': Oh no!\n' + COLOR.bgRed + darkLord.name + COLOR.reset + ': Do you relly think that i would fall for that one again?\n')
+        console.log(COLOR.bgWhite + COLOR.fgBlack + '                           Y O U R  M O V E                                         \n' + COLOR.reset);
+
+        //YOUR MOVE
+        console.log(COLOR.bgWhite + COLOR.fgBlack + '<< You failed to CounterAttack ' + darkLord.name + '! You suffered the hit with a total damage of ' + lastRoundDamage + ' >>\n' + COLOR.reset);
+        console.log(COLOR.bgWhite + COLOR.fgBlack + '                                                                                    \n' + COLOR.reset);
+
+        //CALCS:
+        jedi.hitpoints -= lastRoundDamage;
+        lastRoundDamage = 0;
+        timesCountered = 0;
+        darkLord.counterImmune = false;
+        fightRound += 1;
+
+        // FINAL VERIFICATIONS:
+        battleDashBoard();
+        checkWin();
+        console.log('\n');
+        console.log(COLOR.bgWhite + COLOR.fgBlack + '                        D A R K   L O R D   M O V E                                          ' + COLOR.reset);
+
+    } else if (!darkLord.counterImmune) {
+        //CHATS:
+        console.clear()
+        engine.showBanner('Battle - Round  ' + fightRound);
+        console.log(COLOR.bgWhite + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+        console.log(COLOR.bgCyan + jedi.jediName + COLOR.reset + ': CounterAttacked!\n');
+        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': Smart Move! I\'ll be ready next time. I won\'t make it easy for you! \n')
+        console.log(COLOR.bgWhite + '                           Y O U R  M O V E                                                 \n' + COLOR.reset);
+
+        //YOUR MOVE:
+        console.log(COLOR.bgGreen + '<< You CounterAttacked ' + darkLord.name + '! You dealt a total damage of ' + jedi.attacks.counterAttack.damage + ' >>\n' + COLOR.reset);
+        console.log(COLOR.bgWhite + '                                                                                            \n' + COLOR.reset);
+
+        //CALCS:
+        timesCountered += 1;
+        lastRoundDamage = 0;
+        darkLord.hitpoints += jedi.attacks.counterAttack.damage;
+        if (timesCountered >= 2){darkLord.counterImmune = true}
+        fightRound += 1;
+
+        // FINAL VERIFICATIONS:
+        battleDashBoard();
+        checkWin();
+        console.log('\n');
+        console.log(COLOR.bgWhite + COLOR.fgBlack + '                        D A R K   L O R D   M O V E                                          ' + COLOR.reset);
+    }
+}
+const playerAttacks = function(){
+    //CHAT
+    console.clear();
+    engine.showBanner('Battle Round:  ' + fightRound);
+    console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+    console.log('<< You suffered ' + lastRoundDamage + ' damage from ' + darkLord.name + ' attack. >>')
+
+    //YOUR MOVE:
+    console.log('<< You Attacked ' + darkLord.name + '! You dealt a total damage of ' + jedi.attacks.attack.damage + ' >>\n');
+    console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+
+    //CALCS:
+    jedi.hitpoints -= lastRoundDamage;
+    lastRoundDamage = 0;
+    darkLord.hitpoints -= jedi.attacks.attack.damage;
+    fightRound += 1;
+
+    // FINAL VERIFICATIONS:
+    checkWin();
+    battleDashBoard();
+    console.log('\n');
+    console.log(COLOR.bgWhite + COLOR.fgBlack + '                        D A R K   L O R D   M O V E                                          ' + COLOR.reset);
+}
+const playerAttackSkill = function(id){
+    //VERIFICATIONS:
+    let skill;
+    if(id === 0){
+        skill = jedi.attacks.skill1
+    } else if (id === 1){
+        skill = jedi.attacks.skill2
+    }
+
+    //CHAT
+    console.clear();
+    engine.showBanner('Battle Round:  ' + fightRound);
+    console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+    console.log('<< You suffered ' + lastRoundDamage + ' damage from ' + darkLord.name + ' attack. >>')
+    console.log('<< You Attacked ' + darkLord.name + 'with the skill '+ skill.name + ' and dealt a total damage of ' + skill.damage + ' >>\n');
+    console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+
+    //CALCS:
+    darkLord.hitpoints -= skill.damage;
+    jedi.hitpoints -= lastRoundDamage;
+    lastRoundDamage = 0;
+    fightRound += 1;
+
+    //VERIFICATIONS:
+    checkWin();
+    battleDashBoard();
+    console.log('\n');
+    console.log(COLOR.bgWhite + COLOR.fgBlack + '                        D A R K   L O R D   M O V E                                          ' + COLOR.reset);
+}
+const checkWin = function(){
+    if (jedi.hitpoints <= 0){
+        console.clear()
+        engine.showBanner('Game Over!')
+        console.log('\n\nGame Over!! Dark Lord Won!'); //TODO: add some fancy words here.
+        engine.quit()
+    } else if (darkLord.hitpoints <= 0){
+        console.clear()
+        engine.showBanner('The End');
+        console.log(COLOR.bgYellow + COLOR.fgBlack + '\nCongratulations! You defeated the DarkLord, ' + darkLord.name + '. The galaxy is now a better place.' + COLOR.reset); //TODO: add phancy words here...
+
+        playerDashBoard();
+        engine.quit()
     }
 }
 
@@ -275,7 +368,16 @@ var learnNewSkill = function () {
     //Check if the extracted skill respect the length rule (between 10 and 11 chars).
     if (decypherText.length === 10 || decypherText.length === 11) {
         //If respects the rule, join the skill to jedi known skills list
-        console.log(`${COLOR.fgRed}Congratulations!${COLOR.reset}` + 'You have successfully decrypted and understood the Chapter: ' + ancientTexts[randomNumber].chapter + ' and learned a new Skill: ' + decypherText);
+        //sleepTime(2000);
+        console.log('Reading Chapters ...');
+        //sleepTime(3000);
+        console.log('Trying to Decypher a Chapter ...');
+        //sleepTime(2000);
+        console.log('Found some logical ...');
+        //sleepTime(5000);
+        console.log('Compilig decyphered chapter ...');
+        //sleepTime(6000);
+        console.log(COLOR.fgRed + 'Congratulations!' + COLOR.reset + 'You have successfully decrypted and understood the Chapter: ' + ancientTexts[randomNumber].chapter + ' and learned a new Skill: ' + decypherText);
         var splicedObject;
         for (var i = 0; i < ancientTexts.length; i++) { //Remove the skill from the object list
             if (i === randomNumber) {
@@ -284,7 +386,16 @@ var learnNewSkill = function () {
         }
         jedi.learntSkills.push(decypherText);
     } else {
-        console.log('You couldn\'t learn a new skill. Try next time. You lost 40 of Power');
+        //sleepTime(2000);
+        console.log('Reading Chapters ...');
+        //sleepTime(3000);
+        console.log('Trying to Decypher a Chapter ...');
+        //sleepTime(2000);
+        console.log('Found some logical ...');
+        //sleepTime(5000);
+        console.log('Couldn\'t finish it! It looks really hard. Maybe i should focus more next time.');
+        //sleepTime(6000);
+        console.log(COLOR.bgBlack + '<< You couldn\'t learn a new skill. Try next time. You lost 40 of Power >>' + COLOR.reset);
         jedi.forcePower -= 40;
     }
 }
@@ -292,10 +403,10 @@ var learnNewSkill = function () {
 //STAGES: CREATION OF ALL STAGES:
 var entryStage = engine.create({
     type: 'before',
-    name: 'Entry Stage'
+    name: '[Welcome Stage]'
 })
 var rulesStage = engine.create({
-    type: 'stage',
+    type: 'before',
     name: '[Rules page]'
 })
 var helpStage = engine.create({
@@ -331,15 +442,16 @@ var starDestroyer = engine.create({
     name: '[Star Destroyer]\n'
 })
 
-
 //STAGE: ENTRY -> OK
 entryStage.executeBefore(function () {
     console.clear()
-    engine.showBanner("Star Wars")
+    engine.showBanner('Star Wars')
+    console.log(COLOR.bgRed + '\"For over a thousand generations, the Jedi Knights were the guardians of peace and justice in the Old Republic.\"' + COLOR.reset);
+    calculateJediGrade();
 })
 entryStage.addQuestion({
     type: 'input',
-    message: 'Hello! Say your name young Jedi:',
+    message: 'Type your name: ',
     validator: function (answer) {
         if (answer.length === 0) {
             return 'You should have a name longer than that... '
@@ -356,17 +468,34 @@ entryStage.addQuestion({
     action: function (answer) {
         if (answer === '[Yes]') {
             console.clear();
-            engine.showBanner('Welcome ' + jedi.jediName);
+            engine.showBanner('Welcome  ' + jedi.jediName);
             console.log('\nWelcome ' + jedi.jediName + '! I hope you enjoy it!');
             jedi.jediGrade = calculateJediGrade();
-            console.log('Before proceeding, you must accept the Rules. Goto -> "Rules page"\n');
+            console.log('Before proceeding, you must accept the Rules below.\n');
         } else {
             console.log('May the force be with you!');
             engine.quit();
         }
     }
 })
-
+rulesStage.addQuestion({
+    type: 'list',
+    message: 'You agree in following all the rules ?\n    . Defeat the Sith Lord to Win;\n    . Find vulnerabilities to infiltrate the Star Destroyer;\n    . Learn force techniques through ancient texts;\n\n    . Be careful with the following rules:\n    . All of your actions will increase your fear;\n    . If your bounty value or fear reaches 100, you lose;\n    . If your fear becomes higher than 70, you are experienced enough and become a Jedi Knight;\n    . When you become a Jedi Knight, and pull together 15 vulnerabilities, you are ready to defeat the Dark Lord.\n',
+    options: ['[Yes, I Agree with the Rules]', '[No, I didn\'t even read it]'],
+    action: function (answer) {
+        console.clear()
+        engine.showBanner('Rules')
+        if (answer === '[Yes, I Agree with the Rules]') {
+            console.log('\nYou are now ready to proceed with the game!');
+            readRules = 'Accepted';
+            console.clear()
+            engine.showBanner('Game - Menu')
+        } else {
+            console.log('I knew you weren\'t the Jedi that we are looking for! Get out of here!');
+            engine.quit();
+        }
+    }
+})
 
 //STAGE: myStatus -> OK
 myStatus.executeBefore(function () {
@@ -385,13 +514,11 @@ helpStage.executeBefore(function(){
 helpStage.addQuestion({
     type: 'list',
     message: 'What you want to know?',
-    options: ['[How to Read and Accept Rules?]', '[How to be a Jedi Knight]', '[How to learn new Skills?]', '[How to Loose Fear?]', '[How to loose Bounty]', '[How to Gain ForcePower]', '[What is HitPoints?]', '[How to defeat the Dark Lord?]', '[Go Back]'],
+    options: ['[How to be a Jedi Knight]', '[How to learn new Skills?]', '[How to Loose Fear?]', '[How to loose Bounty]', '[How to Gain ForcePower]', '[What is HitPoints?]', '[How to defeat the Dark Lord?]', '[Go Back]'],
     action: function(answer) {
         console.clear();
         engine.showBanner('Help Page');
-        if (answer === '[How to Read and Accept Rules?]') {
-            console.log('\nEasy! In the main menu, choose \'Rules\'. There you can read and accept.');
-        } else if (answer === '[How to learn new Skills?]') {
+        if (answer === '[How to learn new Skills?]') {
             console.log('You will need to be a Jedi Knight first. Then go to Jedi Training Page. There you must decrypt and learn new scripts based on ancient texts.');
         } else if (answer === '[How to be a Jedi Knight]'){
             console.log('You will reach to Jedi Knight when your fear reches 70. You can control it by looking at your profile info in menu.')
@@ -416,31 +543,9 @@ helpStage.addQuestion({
     options: ['[Go Back]'],
     action:function(answer){
         console.clear()
-        engine.showBanner('Star Wars - Menu')
+        engine.showBanner('Game - Menu')
         if (answer === '[Go Back]'){
             return false
-        }
-    }
-})
-
-//RULES PAGE -> OK
-rulesStage.executeBefore(function () {
-    console.clear()
-    engine.showBanner('Rules')
-})
-rulesStage.addQuestion({
-    type: 'list',
-    message: 'You agree in following all the rules ?\n    . Defeat the Sith Lord to Win;\n    . Find vulnerabilities to infiltrate the Star Destroyer;\n    . Learn force techniques through ancient texts;\n\n    . Be careful with the following rules:\n    . All of your actions will increase your fear;\n    . If your bounty value or fear reaches 100, you lose;\n    . If your fear becomes higher than 70, you are experienced enough and become a Jedi Knight;\n    . When you become a Jedi Knight, and pull together 15 vulnerabilities, you are ready to defeat the Dark Lord.\n',
-    options: ['[Yes, I Agree with the Rules]', '[No, I didn\'t even read it]'],
-    action: function (answer) {
-        if (answer === '[Yes, I Agree with the Rules]') {
-            console.log('\nYou are now ready to proceed with the game!');
-            readRules = true;
-            console.clear()
-            engine.showBanner('Star Wars - Menu')
-        } else {
-            console.log('I knew you weren\'t the Jedi that we are looking for! Get out of here!');
-            engine.quit();
         }
     }
 })
@@ -448,16 +553,14 @@ rulesStage.addQuestion({
 //STAGE: JEDI TEMPLE -> OK
 jediTemple.executeBefore(function () {
     console.clear()
-    if (!readRules) {
-        console.log('You did not accept the rules. Go to Menu Rules First.');
-        return false
-    } else {
-        engine.showBanner("Room: Jedi Temple")
-    }
+    engine.showBanner("Room: Jedi Temple")
+    console.log('\n"Enter our Temple unbidden, you have. Leaving it will not be easy, you will find." - Grand Master Yoda\n')
+    console.log('Temple\'s role, besides being the central hub of all Jedi activities throughout the galaxy, the Temple functions as a monastery for Jedi Knights and Jedi Masters as well as a school for the training of Padawans and initiates.\nSo yes, You are in the right place to begin your journey.')
+    console.log('Here, you will be meditating in contact with the Light! You will achieve grand results, as more you stay, the more Power you will obtain!\n')
 })
 jediTemple.addQuestion({
     type: 'input',
-    message: 'How many hours you want to be connecting with Force?',
+    message: 'How many hours you want to be connecting with Force? (Max. 24h): ',
     validator: function (answer) {
         if (!answer) {
             return 'Type amount of hours: '
@@ -470,99 +573,79 @@ jediTemple.addQuestion({
     }
 })
 jediTemple.executeAfter(function () {
-    if (!readRules) {
-        console.clear();
-        engine.showBanner('Star Wars - Menu')
-        return false;
-    } else {
-        console.clear();
-        engine.showBanner('Star Wars - Menu')
-        calculateFear();
-        calculateAttunement();
-        calculatePower();
-        maximumHoursTraining -= trainedHours;
+    console.clear();
+    engine.showBanner('ROOM: Jedi Temple')
 
-        console.log('\nYou trained for ' + trainedHours + ' hours. You have ' + maximumHoursTraining + ' hours left yet.\nForce Power Obtained: ' + Math.floor(trainedHours * attunement));
-        console.log('Your Fear raised to: ' + jedi.fear + '\n')
+    calculateFear();
+    calculateAttunement();
+    calculatePower();
+    maximumHoursTraining -= trainedHours;
 
-        calculateJediGrade(); //TODO: Must create a one-only-function to make all the necessary checks like this one for example.
-    }
+    console.log('\nYou trained for ' + trainedHours + ' hours. You have ' + maximumHoursTraining + ' hours left yet.\nForce Power Obtained: ' + Math.floor(trainedHours * attunement));
+    console.log('Your Fear raised to: ' + jedi.fear + '\n')
+
+    calculateJediGrade(); //TODO: Must create a one-only-function to make all the necessary checks like this one for example.
 });
 
 //STAGE: CANTINA -> OK
 cantina.executeBefore(function () {
     console.clear()
-    if (!readRules) {
-        console.log('You did not accept the rules. Go read them first.');
-        return false
-    } else {
-        engine.showBanner('Room: Cantina')
-    }
+    engine.showBanner('Room: Cantina')
 });
 cantina.addQuestion({
     type: 'list',
     message: '\nChoose an option: ',
-    options: ['Find New Vulnerabilities', 'Vulnerabilities already known\n', 'Use MindTrick to lower your Bounty', 'Get Back'],
+    options: ['[Find New Vulnerabilities]', '[Vulnerabilities already known]\n', '[Use MindTrick to lower your Bounty]', '[Go Back]'],
     action: function (answer) {
-        if (!readRules) {
-            console.clear();
-            engine.showBanner('Star Wars - Menu')
-            console.log('You did not accept the rules. Go read them first.');
+        console.clear();
+        engine.showBanner('Room: Cantina')
+        if (answer === '[Find New Vulnerabilities]') {
+            console.log('\nLet me see what you found so far...');
+            if (vulFinded.length === 0) {
+                console.log('\nLooks like you didn\'t find any vulnerability yet... Lets find some.');
+                look4Vuls();
+            } else if (vulFinded.length > 0 && vulFinded.length < 15) {
+                console.log('Hummm... you already found ' + vulFinded.length + ' vulnerabilities.')
+                console.log('However, if you want to be ready to fight the Dark Lord, you will need at least 15 vulnerabilities found.\nLet\'s look for some more.');
+                look4Vuls();
+            } else if (vulFinded.length >= 15) {
+                console.log('You have more vulnerabilities known that enough to enter in Star Destroyer and fight the Dark Lord!');
+                console.log('Star Destroyer Vulnerabilities you discover: \n');
+                for (var i = 0; i < vulFinded.length; i++) {
+                    console.log(vulFinded[i]);
+                }
+            } else if (vulFinded.length === 20) {
+                console.log('\nYou already found all the vulnerabilities available.');
+            }
+        } //Tested and working
+        else if (answer === '[Vulnerabilities already known]\n') {
+            if (vulFinded.length === 0) {
+                console.log("You don't know any vulnerabilities yet. Keep searching.")
+            } else if (vulFinded.length > 0) {
+                console.log("\nSo far you discovered:" + vulFinded.length);
+                for (var i = 0; i < vulFinded.length; i++) {
+                    console.log(vulFinded[i]);
+                }
+            }
+        } //Tested and working
+        else if (answer === '[Use MindTrick to lower your Bounty]') {
+            console.log('\nLets Lower your Bounty by using what you were taught in Jedis School.\nClear your mind...\nFocus...');
+
+            let initialBounty = [];
+            initialBounty.push(jedi.bountyValue);
+
+            if (jedi.bountyValue > 50) {
+                jedi.bountyValue -= randomIntFromInterval(5, 45);
+                jedi.forcePower -= randomIntFromInterval(5, 200);
+            }
+
+            console.log('\nNice! you decreased your bounty by ' + (initialBounty[0] - jedi.bountyValue));
+            console.log('Quick Tip: You will only be able to loose some bounty if it is higher than 50.');
+        } else if (answer === '[Go Back]') {
             return false
         } else {
-            if (answer === 'Find New Vulnerabilities') {
-                console.log('\nLet me see what you found so far...');
-                if (vulFinded.length === 0) {
-                    console.log('\nLooks like you didn\'t find any vulnerability yet... Lets find some.');
-                    look4Vuls();
-                } else if (vulFinded.length > 0 && vulFinded.length < 15) {
-                    console.log('Hummm... you already found ' + vulFinded.length + ' vulnerabilities.')
-                    console.log('However, if you want to be ready to fight the Dark Lord, you will need at least 15 vulnerabilities found.\nLet\'s look for some more.');
-                    look4Vuls();
-                } else if (vulFinded.length >= 15) {
-                    console.log('You have more vulnerabilities known that enough to enter in Star Destroyer and fight the Dark Lord!');
-                    console.log('Star Destroyer Vulnerabilities you discover: \n');
-                    for (var i = 0; i < vulFinded.length; i++) {
-                        console.log(vulFinded[i]);
-                    }
-                } else if (vulFinded.length === 20) {
-                    console.log('\nYou already found all the vulnerabilities available.');
-                }
-            } //Tested and working
-            else if (answer === 'Vulnerabilities already known\n') {
-                if (vulFinded.length === 0) {
-                    console.log("You don't know any vulnerabilities yet. Keep searching.")
-                } else if (vulFinded.length > 0) {
-                    console.log("\nSo far you discovered:" + vulFinded.length);
-                    for (var i = 0; i < vulFinded.length; i++) {
-                        console.log(vulFinded[i]);
-                    }
-                }
-            } //Tested and working
-            else if (answer === 'Use MindTrick to lower your Bounty') {
-                console.log('\nLets Lower your Bounty by using what you were taught in Jedis School.\nClear your mind...\nFocus...');
-
-                let initialBounty = [];
-                initialBounty.push(jedi.bountyValue);
-
-                if (jedi.bountyValue > 50) {
-                    jedi.bountyValue -= randomIntFromInterval(5, 45);
-                    jedi.forcePower -= randomIntFromInterval(5, 200);
-                }
-
-                console.log('\nNice! you decreased your bounty by ' + (initialBounty[0] - jedi.bountyValue));
-                console.log(jedi.bountyValue + ' initialBounty before calcs: ' + initialBounty[0]);
-            } else if (answer === 'Get Back') {
-                return ('\nReturning to Menu')
-            } else {
-                return 'Select one of the available options.'
-            }
+            return 'Select one of the available options.'
         }
-        console.clear();
-        engine.showBanner('Star Wars - Menu')
-        trainingHours = answer;
-        return maximumHoursTraining -= trainingHours; //If player only choose to play 8 hours, can play the rest of 24 hours minus 8 later.
-
     }
 })
 cantina.executeAfter(function () {
@@ -572,12 +655,7 @@ cantina.executeAfter(function () {
 //STAGE: AHCH-TO
 ahchto.executeBefore(function () {
     console.clear()
-    if (!readRules) {
-        console.log('You did not accept the rules. Go read them first.');
-        return false
-    } else {
-        engine.showBanner('Room: Ahch-To')
-    }
+    engine.showBanner('Room: Ahch-To')
 })
 ahchto.addQuestion({
     type: 'input',
@@ -594,33 +672,23 @@ ahchto.addQuestion({
     }
 })
 ahchto.executeAfter(function () {
-    if (!readRules) {
-        console.log('You did not accept the rules. Go read them first.');
-        return false
-    } else {
-        jedi.fear = Math.floor(jedi.fear / hoursInCave); //reduce Fear change formula as intended.
-        jedi.forcePower = Math.floor(jedi.forcePower - (28 * hoursInCave)); //reduce ForcePower 28 per hour. Change this value as inteded.
-        console.log('After being in the cave, you have lost fear!\nCurrent fear: ' + jedi.fear)
-        maximumHoursInCave -= hoursInCave;
-
-        calculateJediGrade();
-    }
+    jedi.fear = Math.floor(jedi.fear / hoursInCave); //reduce Fear change formula as intended.
+    jedi.forcePower = Math.floor(jedi.forcePower - (28 * hoursInCave)); //reduce ForcePower 28 per hour. Change this value as inteded.
+    console.log('After being in the cave, you lost some fear!\nCurrent fear: ' + jedi.fear)
+    maximumHoursInCave -= hoursInCave;
+    calculateJediGrade();
 })
 
 //STAGE: JEDI TRAINING
 jediTrain.executeBefore(function () {
     console.clear()
-    if (!readRules) {
-        console.log('\nYou did not accept the rules. Go read them first.');
-        return false
+    engine.showBanner('Room: Jedi Training Skills')
+    calculateJediGrade()
+    if (jedi.jediKnight) {
+        console.log('If you want to defeat Sith Lord, you will need at least 2 Skills!\n')
     } else {
-        if (jedi.jediKnight) {
-            engine.showBanner('Room: Jedi Training')
-            console.log('If you want to defeat Sith Lord, you will need at least 2 Skills!')
-        } else {
-            console.log('Dear ' + jedi.jediGrade + ' you have much to learn before learning this special Skills. Graduate a bit more and come back.')
-            return false
-        }
+        console.log('Dear ' + jedi.jediGrade + ' you have much to learn before learning this special Skills. Graduate a bit more and come back.')
+        return false
     }
 })
 jediTrain.addQuestion({
@@ -640,235 +708,143 @@ jediTrain.addQuestion({
         }
     }
 })
-jediTrain.addQuestion({
-    type: 'list',
-    message: 'Do you feel capable of defeat the Dark Lord, ' + darkLord.name,
-    options: ['[Yes]', '[No]'],
-    action: function (answer) {
-        if (answer === '[Yes]') {
-            console.log('\nOk! Let\'s do it!');
-
-        } else {
-            console.log('Ok, Come Back when you are ready!');
-            return false
-        }
-    }
-})
-jediTrain.executeAfter(function () {
-    if (!readRules) {
-        engine.showBanner('Star Wars');
-        console.log('You did not accept the rules. Go read them first.');
-        return false
-    }
-})
 
 //STAGE:  Star Destroyer Where you'll fight the Sith Lord
-starDestroyer.executeBefore(function () {
+starDestroyer.executeBefore(function () { //Round 1 - DarkLord Attack
     console.clear();
     engine.showBanner('Fight: ' + darkLord.name);
 
-    if (readRules && jedi.learntSkills.length === 2 && jedi.vulnerabilities >=15 && jedi.jediKnight) {
-        console.log(COLOR.bgWhite + 'You are now ready for this battle! May the Force be with you!\n' + COLOR.reset);
-        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': You should have come to Dark Side. Either you join us, or you will die!')
-        console.log(COLOR.bgCyan + jedi.jediName + COLOR.reset + ': Strike me down and I will become more powerful than you could possibly imagine!')
+    console.log('Skill1: ' + jedi.learntSkills[0]);
+    console.log('Skill2: ' + jedi.learntSkills[1]);
+
+    if (jedi.learntSkills.length === 2 && jedi.vulnerabilities >=15 && jedi.jediKnight) {
+        console.log(COLOR.bgWhite + '***You are now ready for this battle! May the Force be with you!****\n' + COLOR.reset); //TODO: Edit dialogues with some fancy words related with Star Wars galaxy shit.
+        console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
+        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': You should have come to Dark Side. Either you join us, or you will die!');
+        console.log(COLOR.bgCyan + jedi.jediName + COLOR.reset + ': Strike me down and I will become more powerful than you could possibly imagine!');
         console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': You Don\'t Know The Power Of The Dark Side!');
-        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': I Will Show You The True Nature Of The Force now. Be ready for my Saber!');
-        console.log(COLOR.bgBlack + '<< ' + darkLord.name + ' attacked you with a ' + COLOR.bgRed + darkLord.attackTypes[0].attackName + COLOR.reset + COLOR.bgBlack + ' >>' + COLOR.reset);
-        lastRoundDamage = darkLord.attackTypes[0].damage;
+        console.log(COLOR.bgRed + darkLord.name + COLOR.reset + ': I Will Show You The True Nature Of The Force now. Be ready for my Saber!\n');
+        console.log(COLOR.bgWhite + COLOR.fgBlack + '                                                                                             \n' + COLOR.reset);
+        lastRoundDamage = darkLord.attacks.attack1.damage;
+        battleDashBoard();
+
     } else {
         console.clear()
         engine.showBanner('Fight: ' + darkLord.name);
         console.log('Some requirements are not met. Please proceed with the necessary arrangements before coming here.\n');
-        if (readRules === false){console.log('Requirements: Read the Rules before proceeding')}
         if (jedi.learntSkills < 2){console.log('Requirements: You need at least 2 skills. Current known Skills: '+jedi.learntSkills.length)}
         if (jedi.vulnerabilities < 15){console.log('Requirements: You need at least 15 vulnerabilites. Current known Vulnerabilities: '+jedi.vulnerabilities)}
         if (!jedi.jediKnight){console.log('Requirements: You need to be a Jedi Knight. Current Jedi Grade: '+jedi.jediGrade)}
         return false
     }
-
 })
-starDestroyer.addQuestion({ //Round 1
+starDestroyer.addQuestion({ //Round 1 - Player Attack/CounterAttack
     type: 'list',
-    message: 'Choose your Best Strategy:',
-    options: ['[Attack]', '[Counter]'],
+    message: ('\n' + COLOR.bgBlack + '<< ' + darkLord.name + ': Attacked with ' + COLOR.bgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>' + COLOR.reset),
+    options: ['[Attack]', '[Counter]'], //TODO: Add a defend mode...
     action: function (answer) {
-        if (answer === '[Attack]'){
-            console.clear();
-            engine.showBanner('Battle - Round I');
-            console.log('\nYou attacked ' + darkLord.name+ 'and dealt a total damage of ' + jedi.attackTypes[0].damage + '\n');
-            darkLord.hitpoints -= jedi.attackTypes[0].damage;
+        lastRoundDamage = darkLord.attacks.attack1.damage;
+
+        if (answer === '[Attack]') {
             jedi.hitpoints -= lastRoundDamage;
-            battleDashBoard();
-        } else if (answer === '[Counter]'){ // normal attack = 0; counter attack = 1
-            if (timesCountered >= 2) {
-                console.clear();
-                engine.showBanner('Battle - Round I');
-                console.log('You failed to CounterAttack your Opponent! You suffered the hit with a total damage of ' + darkLord.attackTypes[0].damage + '\n');
-                jedi.hitpoints -= darkLord.attackTypes[0].damage;
-                battleDashBoard();
-                timesCountered = 0;
-            } else if (timesCountered < 2){
-                console.clear();
-                engine.showBanner('Battle - Round I');
-                console.log('You CounterAttacked your opponent and dealt a total damage of ' + jedi.attackTypes[1].damage + '\n');
-                darkLord.hitpoints -= jedi.attackTypes[1].damage;
-                battleDashBoard();
-                timesCountered += 1;
-            }
+            checkWin();
+            playerAttacks();
+        } else if (answer === '[Counter]') {
+            checkWin()
+            counterAttack();
         }
-        fightRound += 1;
     }
-}) // Round 1 Attack
+}) //Round 1
 starDestroyer.addQuestion({
     type: 'list',
-    message: 'Round I:',
-    options: ['[Move to Round II]'],
+    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.skill1.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.skill1.damage + ' HitPoints >>\n' + COLOR.reset),
+    options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
     action: function (answer) {
-        if (answer === '[Move to Round II]') {
-            console.clear();
-            engine.showBanner('Battle - Round II');
-            console.log('Is that all you got ??');
-            jedi.hitpoints -= darkLord.attackDamage;
-            console.log(darkLord.name + ' attacked you with a ' + darkLord.attackTypes[0].attackName + ' and you lost ' + darkLord.attackTypes[0].damage + ' HitPoints');
+        lastRoundDamage = darkLord.attacks.skill1.damage;
+
+        if (answer === '[Attack]') {
+            playerAttacks();
+        } else if (answer === '[Counter]') {
+            counterAttack();
+        } else if (answer === '[' + jedi.learntSkills[0] + ']') {
+            playerAttackSkill(0);
+        } else if (answer === '[' + jedi.learntSkills[1] + ']') {
+            playerAttackSkill(1);
         }
     }
-}) // Round 1 Move
-starDestroyer.addQuestion({ //Round 2
-    type: 'list',
-    message: 'Choose your Best Strategy:',
-    options: ['[Counter]', '[Attack - Normal Hit]\n', '[Skill ' + jedi.skillsTypes[0].skillName, '[Skill ' + jedi.skillsTypes[1].skillName],
-    action: function (answer) {
-        if (answer === '[Counter]') { // normal attack = 0; counter attack = 1
-            if (timesCountered >= 2) {
-                console.clear()
-                engine.showBanner('Battle - Round II')
-                console.log('You failed to CounterAttack your Opponent! You suffered the hit with a total damage of ' + darkLord.attackTypes[0].damage);
-                jedi.hitpoints -= darkLord.attackTypes[0].damage;
-                battleDashBoard();
-            } else if (timesCountered < 2) {
-                console.clear()
-                engine.showBanner('Battle - Round II');
-                console.log('Be ready for my Counter Attack!');
-                console.log(COLOR.bgWhite +'You CounterAttacked your opponent and dealt a total damage of ' + jedi.attackTypes[1].damage + COLOR.reset);
-                darkLord.hitpoints -= jedi.attackTypes[1].damage;
-                timesCountered += 1;
-                battleDashBoard();
-            }
-
-
-            var counterAttack = function(){
-                if (timesCountered >= 2) {
-                    console.clear()
-                    engine.showBanner('Battle - Round ' + fightRound);
-                    console.log('You failed to CounterAttack your Opponent! You suffered the hit with a total damage of ' + lastRoundDamage);
-                    jedi.hitpoints -= lastRoundDamage;
-                    battleDashBoard();
-                } else if (timesCountered < 2) {
-                    console.clear()
-                    engine.showBanner('Battle - Round ' + fightRound);
-                    console.log(COLOR.bgCyan + jedi.jediName + COLOR.bgBlack + ': Be ready for my Counter Attack!' + COLOR.reset + '\n');
-                    console.log(COLOR.bgWhite +'<< You CounterAttacked your opponent and dealt a total damage of ' + jedi.attackTypes[1].damage + ' >>' + COLOR.reset);
-
-                    darkLord.hitpoints -= jedi.attackTypes[1].damage;
-                    timesCountered += 1;
-                    lastRoundDamage = 0;
-                    battleDashBoard();
-                    //add to check if hitpoints reached 0
-                }
-            }
-
-
-
-        } else if (answer === '[Attack - Normal Hit]') {
-            console.clear()
-            engine.showBanner('Battle - Round II')
-            console.log('\nYou attacked ' + darkLord.name);
-            darkLord.hitpoints -= jedi.attackTypes[0].damage;
-            battleDashBoard();
-        } else if (answer === '[Skill ' + jedi.skillsTypes[0].skillName) {
-            console.clear()
-            engine.showBanner('Battle - Round II')
-            console.log('You attacked your opponent with ' + jedi.skillsTypes[0].skillName + ' and dealt a total damage of ' + jedi.skillsTypes[0].damage + ' HitPoints.');
-            battleDashBoard();
-        } else if (answer === '[Skill ' + jedi.skillsTypes[1].skillName) {
-            console.clear()
-            engine.showBanner('Battle - Round II')
-            console.log('You attacked your opponent with ' + jedi.skillsTypes[1].skillName + ' and dealt a total damage of ' + jedi.skillsTypes[1].damage + ' HitPoints.')
-            battleDashBoard();
-        }
-        fightRound += 1;
-    }
-}) // Round 2 Attack
+})
 starDestroyer.addQuestion({
     type: 'list',
-    message: 'Round II:',
-    options: ['[Move to Round III]'],
+    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>\n' + COLOR.reset),
+    options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
     action: function (answer) {
-        if (answer === '[Move to Round III]') {
-            console.clear()
-            engine.showBanner('Battle - Round III')
-            console.log('Is that all you got ??');
-            jedi.hitpoints -= darkLord.attackDamage;
-            console.log(darkLord.name + ' attacked you with a Special Skill: ' + darkLord.skills[0].skillName + ', and you lost ' + darkLord.skills[0].damage + ' HitPoints');
-            battleDashBoard();
+        lastRoundDamage = darkLord.attacks.attack1.damage;
+
+        if (answer === '[Attack]') {
+            playerAttacks();
+        } else if (answer === '[Counter]') {
+            counterAttack();
+        } else if (answer === '[' + jedi.learntSkills[0] + ']') {
+            playerAttackSkill(0);
+        } else if (answer === '[' + jedi.learntSkills[1] + ']') {
+            playerAttackSkill(1);
         }
     }
-}) // Round 2 Move
-starDestroyer.addQuestion({ //Round 3
-    type: 'list',
-    message: 'Choose your Best Strategy:',
-    options: ['[Counter]', '[Attack - Normal Hit]\n', '[Skill ' + jedi.skillsTypes[0].skillName, '[Skill ' + jedi.skillsTypes[1].skillName],
-    action: function (answer) {
-        if (answer === '[Counter]') { // normal attack = 0; counter attack = 1
-            if (timesCountered >= 2) {
-                console.clear()
-                engine.showBanner('Battle - Round III')
-                console.log('You failed to CounterAttack your Oponnent! You suffered the hit with a total damage of ' + darkLord.attackTypes[0].damage);
-                jedi.hitpoints -= darkLord.attackTypes[0].damage;
-                console.log('Your total of HitPoints now are: ', jedi.hitpoints);
-            } else if (timesCountered < 2) {
-                console.clear()
-                engine.showBanner('Battle - Round III')
-                console.log('You CounterAttacked your opponent and dealt a total damage of ' + jedi.attackTypes[1].damage)
-                darkLord.hitpoints -= jedi.attackTypes[1].damage;
-                timesCountered += 1;
-            }
-        } else if (answer === '[Attack]') {
-            console.clear()
-            engine.showBanner('Battle - Round III')
-            console.log('\nYou attacked ' + darkLord.name);
-            darkLord.hitpoints -= jedi.attackTypes[0].damage;
-            console.log(darkLord.name + ' has now ' + darkLord.hitpoints + ' HitPoints left.\n');
-        } else if (answer === '[Skill ' + jedi.skillsTypes[0].skillName) {
-            console.clear()
-            engine.showBanner('Battle - Round III')
-            console.log('You attacked your opponent with ' + jedi.skillsTypes[0].skillName + ' and dealt a total damage of ' + jedi.skillsTypes[0].damage + ' HitPoints.');
-            console.log(darkLord.name + ' has now a total of ' + darkLord.hitpoints + ' HitPoints.');
-        } else if (answer === '[Skill ' + jedi.skillsTypes[1].skillName) {
-            console.clear()
-            engine.showBanner('Battle - Round III')
-            console.log('You attacked your opponent with ' + jedi.skillsTypes[1].skillName + ' and dealt a total damage of ' + jedi.skillsTypes[1].damage + ' HitPoints.')
-            console.log(darkLord.name + ' has now a total of ' + darkLord.hitpoints + ' HitPoints.')
-        }
-        fightRound += 1;
-    }
-}) // Round 3 Attack
+})
 starDestroyer.addQuestion({
     type: 'list',
-    message: 'Round III:',
-    options: ['[Move to Round IV]'],
+    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.skill2.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.skill2.damage + ' HitPoints >>\n' + COLOR.reset),
+    options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
     action: function (answer) {
-        if (answer === '[Move to Round IV]') {
-            console.clear()
-            engine.showBanner('Battle - Round III')
-            console.log('Is that all you got ??');
-            jedi.hitpoints -= darkLord.attackDamage;
-            console.log(darkLord.name + ' attacked you with a Special Skill: ' + darkLord.skills[0].skillName + ', and you lost ' + darkLord.skills[0].damage + ' HitPoints');
-            battleDashBoard();
+        lastRoundDamage = darkLord.attacks.skill2.damage;
+
+        if (answer === '[Attack]') {
+            playerAttacks();
+        } else if (answer === '[Counter]') {
+            counterAttack();
+        } else if (answer === '[' + jedi.learntSkills[0] + ']') {
+            playerAttackSkill(0);
+        } else if (answer === '[' + jedi.learntSkills[1] + ']') {
+            playerAttackSkill(1);
         }
     }
-}) // Round 3 Move
+})
+starDestroyer.addQuestion({
+    type: 'list',
+    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.attack1.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.attack1.damage + ' HitPoints >>\n' + COLOR.reset),
+    options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
+    action: function (answer) {
+        lastRoundDamage = darkLord.attacks.attack1.damage;
 
+        if (answer === '[Attack]') {
+            playerAttacks();
+        } else if (answer === '[Counter]') {
+            counterAttack();
+        } else if (answer === '[' + jedi.learntSkills[0] + ']') {
+            playerAttackSkill(0);
+        } else if (answer === '[' + jedi.learntSkills[1] + ']') {
+            playerAttackSkill(1);
+        }
+    }
+})
+starDestroyer.addQuestion({
+    type: 'list',
+    message: (COLOR.bgBlack + '<< ' + darkLord.name + ': attacked with ' + COLOR.bgRed + darkLord.attacks.skill3.name + COLOR.reset + COLOR.bgBlack + '. You lost ' + darkLord.attacks.skill3.damage + ' HitPoints >>\n' + COLOR.reset),
+    options: ['[Attack]', '[Counter]', '[' + jedi.learntSkills[0] + ']', '[' + jedi.learntSkills[1] + ']'],
+    action: function (answer) {
+        lastRoundDamage = darkLord.attacks.skill3.damage;
+
+        if (answer === '[Attack]') {
+            playerAttacks();
+        } else if (answer === '[Counter]') {
+            counterAttack();
+        } else if (answer === '[' + jedi.learntSkills[0] + ']') {
+            playerAttackSkill(0);
+        } else if (answer === '[' + jedi.learntSkills[1] + ']') {
+            playerAttackSkill(1);
+        }
+    }
+})
 
 //QUIT GAME -> OK
 quitgame.executeBefore(function () {
@@ -881,8 +857,11 @@ quitgame.addQuestion({
     options: ['[Yes]', '[No]'],
     action: function (answer) {
         if (answer === '[Yes]') {
+
             console.log('\nHave a nice day!');
             engine.quit();
+        } else {
+            return false
         }
     }
 })
