@@ -82,7 +82,7 @@ jedi.bountyValue = 75;
 jedi.fear = 85;
 jedi.vulnerabilities = 46;
 jedi.hitpoints = 35;
-jedi.learntSkills = [];
+jedi.learntSkills = ['Force Leap', 'Force Burst'];
 jedi.attacks = {
         attack: {name: '[Normal Attack]', damage: 7},
         skill1: {name: '[' + jedi.learntSkills[0] + ']', damage: 15},
@@ -267,7 +267,7 @@ const counterAttack = function(){
         //CALCS:
         timesCountered += 1;
         lastRoundDamage = 0;
-        darkLord.hitpoints += jedi.attacks.counterAttack.damage;
+        darkLord.hitpoints -= jedi.attacks.counterAttack.damage;
         if (timesCountered >= 2){darkLord.counterImmune = true}
         fightRound += 1;
 
@@ -714,9 +714,6 @@ starDestroyer.executeBefore(function () { //Round 1 - DarkLord Attack
     console.clear();
     engine.showBanner('Fight: ' + darkLord.name);
 
-    console.log('Skill1: ' + jedi.learntSkills[0]);
-    console.log('Skill2: ' + jedi.learntSkills[1]);
-
     if (jedi.learntSkills.length === 2 && jedi.vulnerabilities >=15 && jedi.jediKnight) {
         console.log(COLOR.bgWhite + '***You are now ready for this battle! May the Force be with you!****\n' + COLOR.reset); //TODO: Edit dialogues with some fancy words related with Star Wars galaxy shit.
         console.log(COLOR.bgWhite + COLOR.fgBlack + '                          C H A T   S C E N E                                                \n' + COLOR.reset);
@@ -764,11 +761,14 @@ starDestroyer.addQuestion({
 
         if (answer === '[Attack]') {
             playerAttacks();
+            console.log('[' + jedi.learntSkills[0] + ']');
         } else if (answer === '[Counter]') {
             counterAttack();
+            console.log('[' + jedi.learntSkills[0] + ']');
         } else if (answer === '[' + jedi.learntSkills[0] + ']') {
             playerAttackSkill(0);
         } else if (answer === '[' + jedi.learntSkills[1] + ']') {
+            console.log('[' + jedi.learntSkills[0] + ']');
             playerAttackSkill(1);
         }
     }
@@ -869,8 +869,4 @@ quitgame.addQuestion({
 // RUN GAME
 engine.run();
 
-
-/*
-* KNOWN BUGS:
-* When discover new skills, in the last scenes when attacking the dark lord, the skills show up as 'undefined'
- */
+//In Jedi Object, make sure to put the values at 0 and arrays emptys, except the hitpoints and jediKnight. Then start the game
