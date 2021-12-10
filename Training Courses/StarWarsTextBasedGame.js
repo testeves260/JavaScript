@@ -73,14 +73,14 @@ COLOR = {
 }; //Change console color text and backg
 
 //Player Creation
-const jedi = {}; //Função construtora para poder chamar propriedades próprias dentro do objecto.
+const jedi = {}; //Função construtora para poder chamar propriedades próprias dentro do objecto. - Não está a ser utilizada.
 jedi.jediName =  '';
 jedi.jediKnight = true;
 jedi.jediGrade = 'Jedi Knight';
 jedi.forcePower = 456;
 jedi.bountyValue = 75;
 jedi.fear = 85;
-jedi.vulnerabilities = 46;
+jedi.vulnerabilities = 15;
 jedi.hitpoints = 35;
 jedi.learntSkills = ['Force Leap', 'Force Burst'];
 jedi.attacks = {
@@ -89,7 +89,6 @@ jedi.attacks = {
         skill2: {name: '[' + jedi.learntSkills[1] + ']', damage: 18},
         counterAttack: {name: '[CounterAttack]', damage: 14}
     }
-
 
 //BOSS Creation:
 const darkLord = {
